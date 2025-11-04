@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Influence Grid Analyzer — Pure HTML/CSS/JS</title>
+
+  <style>
+    /* ===== Basic theme & reset ===== */
+    :root{
+      --bg:#0b0b0d;
+      --card:#1f1f22;
+      --muted:#9aa0a6;
+      --accent:#ffffff;
+      --glass: rgba(0,0,0,0.6);
+      --pill-bg: rgba(255,255,255,0.06);
+      --radius:18px;
+      --transition: 220ms cubic-bezier(.2,.9,.3,1);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body,#app{height:100%}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,var(--bg) 0%, #060608 100%);
+      color:var(--accent);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:28px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+    }
+
+    /* ===== Container ===== */
+    .container{
+      width:100%;
+      max-width:1100px;
+    }
+    header{ text-align:center; margin-bottom:18px }
+    h1{ font-size:28px; margin:0 0 6px; letter-spacing:-0.02em }
+    p.lead{ margin:0 auto 18px; max-width:780px; color:var(--muted); font-size:14px }
+
+    /* ===== Filter pills ===== */
+    .filters {
+      display:flex;
+      gap:8px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-bottom:20px;
+    }
+    .pill{
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:13px;
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,0.06);
+      background:var(--pill-bg);
+      color:var(--muted);
+      transition: all var(--transition);
+      user-select:none;
+    }
+    .pill[aria-pressed="true"]{
+      background:var(--accent);
+      color:#0b0b0d;
+      border-color:var(--accent);
+      transform:translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    }
+    .pill:focus{outline:2px solid rgba(255,255,255,0.08); outline-offset:3px}
+
+    /* ===== Grid ===== */
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+    @media (max-width:900px){
+      .grid{ grid-template-columns:repeat(2,1fr) }
+    }
+    @media (max-width:560px){
+      .grid{ grid-template-columns:repeat(1,1fr) }
+    }
+
+    /* ===== Card ===== */
+    .card{
+      position:relative;
+      border-radius:var(--radius);
+      overflow:hidden;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      box-shadow: 0 8px 24px rgba(2,6,23,0.6);
+      transform-origin:center;
+      transition: transform 300ms cubic-bezier(.2,.9,.3,1), box-shadow 200ms;
+      min-height:0;
+      aspect-ratio:1 / 1; /* keeps perfect square */
+    }
+    .card:focus-within, .card:hover{
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 18px 40px rgba(2,6,23,0.7);
+    }
+
+    /* Placeholder photo area */
+    .photo {
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--muted);
+      font-weight:600;
+      font-size:14px;
+      background:
+        linear-gradient(120deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));
+    }
+
+    /* Overlay revealed on hover/focus */
+    .overlay{
+      position:absolute;
+      inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.55));
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding:18px;
+      color:var(--accent);
+      gap:8px;
+      pointer-events:none;
+      transform: translateY(18px);
+      opacity:0;
+      transition: opacity 220ms var(--transition), transform 260ms var(--transition);
+    }
+    .card:focus-within .overlay,
+    .card:hover .overlay{
+      opacity:1;
+      transform: translateY(0);
+      pointer-events:auto;
+    }
+    .overlay-inner{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+      gap:6px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.35));
+      padding:12px;
+      border-radius:12px;
+      backdrop-filter: blur(6px);
+    }
+    .type {
+      font-size:11px;
+      letter-spacing:0.12em;
+      color:var(--muted);
+      text-transform:uppercase;
+    }
+    .title{
+      font-size:16px;
+      font-weight:700;
+      margin:0;
+    }
+    .quote{
+      font-size:13px;
+      font-style:italic;
+      color:#d6d8da;
+      margin:0;
+    }
+
+    /* Footer legend */
+    .legend{ margin-top:18px; color:var(--muted); text-align:center; font-size:13px }
+
+    /* Accessible hidden (for screen readers) */
+    .sr-only{
+      position:absolute!important;
+      height:1px;width:1px;
+      overflow:hidden;clip:rect(1px,1px,1px,1px);
+      white-space:nowrap;border:0;padding:0;margin:-1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app" role="application" aria-label="Influence Grid Analyzer">
+    <header>
+      <h1>Influence Grid Analyzer</h1>
+      <p class="lead">Explore archetypes of visual influence. Hover a tile to decode its psychological cue. Use the filters to focus the analysis.</p>
+    </header>
+
+    <nav class="filters" role="toolbar" aria-label="Filter archetypes">
+      <button class="pill" data-filter="All" aria-pressed="true">All</button>
+      <button class="pill" data-filter="Power" aria-pressed="false">Power</button>
+      <button class="pill" data-filter="Connection" aria-pressed="false">Connection</button>
+      <button class="pill" data-filter="Aspirational" aria-pressed="false">Aspirational</button>
+      <button class="pill" data-filter="Relatable" aria-pressed="false">Relatable</button>
+    </nav>
+
+    <main>
+      <section class="grid" id="grid" aria-live="polite" aria-label="Influence grid">
+        <!-- Cards: data-type attribute used for filtering -->
+        <article class="card" data-type="Power" tabindex="0" aria-label="Authority — No Smoke Without Fire">
+          <div class="photo">[ Photo 1 ]</div>
+          <div class="overlay" aria-hidden="true">
+            <div class="overlay-inner">
+              <div class="type">Power</div>
+              <div class="title">Authority</div>
+              <div class="quote">“No Smoke Without Fire”</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-type="Connection" tabindex="0" aria-label="Tribe — Power in Familiar Faces">
+          <div class="photo">[ Photo 2 ]</div>
+          <div class="overlay" aria-hidden="true">
+            <div class="overlay-inner">
+              <div class="type">Connection</div>
+              <div class="title">Tribe</div>
+              <div class="quote">“Power in Familiar Faces”</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-type="Aspirational" tabindex="0" aria-label="Charisma — Confidence in Contrast">
+          <div class="photo">[ Photo 3 ]</div>
+          <div class="overlay" aria-hidden="true">
+            <div class="overlay-inner">
+              <div class="type">Aspirational</div>
+              <div class="title">Charisma</div>
+              <div class="quote">“Confidence in Contrast”</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-type="Connection" tabindex="0" aria-label="Access — Backstage Belonging">
+          <div class="photo">[ Photo 4 ]</div>
+          <div class="overlay" aria-hidden="true">
+            <div class="overlay-inner">
+              <div class="type">Connection</div>
+              <div class="title">Access</div>
+              <div class="quote">“Backstage Belonging”</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-type="Relatable" tabindex="0" aria-label="Intimacy — The Smile Before the Story">
+          <div class="photo">[ Photo 5 ]</div>
+          <div class="overlay" aria-hidden="true">
+            <div class="overlay-inner">
+              <div class="type">Relatable</div>
+              <div class="title">Intimacy</div>
+              <div class="quote">“The Smile Before the Story”</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-type="Power" tabindex="0" aria-label="Control — Silence Speaks Loud">
+          <div class="photo">[ Photo 6 ]</div>
+          <div class="overlay" aria-hidden="true">
+            <div class="overlay-inner">
+              <div class="type">Power</div>
+              <div class="title">Control</div>
+              <div class="quote">“Silence Speaks Loud”</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-type="Aspirational" tabindex="0" aria-label="Status — Big Company, Bigger Frame">
+          <div class="photo">[ Photo 7 ]</div>
+          <div class="overlay" aria-hidden="true">
+            <div class="overlay-inner">
+              <div class="type">Aspirational</div>
+              <div class="title">Status</div>
+              <div class="quote">“Big Company, Bigger Frame”</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-type="Relatable" tabindex="0" aria-label="Pride — Symbolic Celebration">
+          <div class="photo">[ Photo 8 ]</div>
+          <div class="overlay" aria-hidden="true">
+            <div class="overlay-inner">
+              <div class="type">Relatable</div>
+              <div class="title">Pride</div>
+              <div class="quote">“Symbolic Celebration”</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" data-type="Connection" tabindex="0" aria-label="Narrative — The Breakfast of Influence">
+          <div class="photo">[ Photo 9 ]</div>
+          <div class="overlay" aria-hidden="true">
+            <div class="overlay-inner">
+              <div class="type">Connection</div>
+              <div class="title">Narrative</div>
+              <div class="quote">“The Breakfast of Influence”</div>
+            </div>
+          </div>
+        </article>
+
+      </section>
+    </main>
+
+    <div class="legend">Each frame is an archetype used by influential profiles. Open the filters to isolate themes.</div>
+  </div>
+
+  <script>
+    /* ===== Simple filter handling ===== */
+    (function(){
+      const filterButtons = document.querySelectorAll('.pill');
+      const cards = Array.from(document.querySelectorAll('.card'));
+      let active = 'All';
+
+      function applyFilter(chosen){
+        active = chosen;
+        // update aria-pressed
+        filterButtons.forEach(btn => {
+          const val = btn.dataset.filter;
+          btn.setAttribute('aria-pressed', val === chosen ? 'true' : 'false');
+        });
+
+        // show/hide matching cards
+        cards.forEach(card => {
+          const type = card.dataset.type;
+          if(chosen === 'All' || type === chosen){
+            card.style.display = ''; // default
+          } else {
+            // graceful hide with fade + collapse for accessibility
+            card.style.display = 'none';
+          }
+        });
+
+        // For screen readers: announce
+        const grid = document.getElementById('grid');
+        grid.setAttribute('aria-label', `Influence grid — filter: ${chosen}`);
+      }
+
+      // attach click handlers
+      filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+        btn.addEventListener('keydown', (ev) => {
+          if(ev.key === 'Enter' || ev.key === ' '){
+            ev.preventDefault();
+            btn.click();
+          }
+        });
+      });
+
+      // keyboard: allow left/right to jump pills
+      document.addEventListener('keydown', (e) => {
+        const keys = ['ArrowLeft','ArrowRight'];
+        if(!keys.includes(e.key)) return;
+        const focused = document.activeElement;
+        if(!focused || !focused.classList.contains('pill')) return;
+        const arr = Array.from(filterButtons);
+        const i = arr.indexOf(focused);
+        if(i === -1) return;
+        const next = e.key === 'ArrowRight' ? arr[i+1] ?? arr[0] : arr[i-1] ?? arr[arr.length-1];
+        next.focus();
+      });
+
+      // initialize
+      applyFilter('All');
+    })();
+  </script>
+</body>
+</html>
