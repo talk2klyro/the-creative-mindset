@@ -1,363 +1,652 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Influence Grid Analyzer — Pure HTML/CSS/JS</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Problem Discovery Playbook — Premium</title>
 
-  <style>
-    /* ===== Basic theme & reset ===== */
+<!-- Google fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* --------------------------
+     Theme variables
+  ---------------------------*/
+  :root{
+    --bg: #fbf7f2;
+    --panel: #ffffff;
+    --ink: #24303a;
+    --muted: #6c7a86;
+    --accent: #0ea5a0;          /* teal accent */
+    --accent-2: #d19a66;        /* warm amber */
+    --glass: rgba(255,255,255,0.6);
+    --shadow: rgba(20,30,40,0.08);
+    --radius: 14px;
+    --max-width: 1100px;
+  }
+  @media (prefers-color-scheme:dark){
     :root{
-      --bg:#0b0b0d;
-      --card:#1f1f22;
-      --muted:#9aa0a6;
-      --accent:#ffffff;
-      --glass: rgba(0,0,0,0.6);
-      --pill-bg: rgba(255,255,255,0.06);
-      --radius:18px;
-      --transition: 220ms cubic-bezier(.2,.9,.3,1);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      --bg: #071019;
+      --panel: #071720;
+      --ink: #e6eef2;
+      --muted: #98a7b0;
+      --accent: #49d6c0;
+      --accent-2: #ffb86c;
+      --glass: rgba(255,255,255,0.03);
+      --shadow: rgba(0,0,0,0.6);
     }
-    *{box-sizing:border-box}
-    html,body,#app{height:100%}
-    body{
-      margin:0;
-      background: linear-gradient(180deg,var(--bg) 0%, #060608 100%);
-      color:var(--accent);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      padding:28px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:center;
-    }
+  }
 
-    /* ===== Container ===== */
-    .container{
-      width:100%;
-      max-width:1100px;
-    }
-    header{ text-align:center; margin-bottom:18px }
-    h1{ font-size:28px; margin:0 0 6px; letter-spacing:-0.02em }
-    p.lead{ margin:0 auto 18px; max-width:780px; color:var(--muted); font-size:14px }
+  /* --------------------------
+     Base reset + typography
+  ---------------------------*/
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, 'Lora', serif;
+    background: linear-gradient(180deg, var(--bg) 0%, rgba(0,0,0,0.01) 100%);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    line-height:1.6;
+    padding:32px;
+  }
+  .wrap{
+    max-width:var(--max-width);
+    margin:0 auto;
+    background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.3));
+    border-radius:calc(var(--radius) + 6px);
+    box-shadow:0 20px 60px var(--shadow);
+    overflow:hidden;
+    display:grid;
+    grid-template-columns: 320px 1fr;
+    gap:0;
+  }
 
-    /* ===== Filter pills ===== */
-    .filters {
-      display:flex;
-      gap:8px;
-      justify-content:center;
-      flex-wrap:wrap;
-      margin-bottom:20px;
-    }
-    .pill{
-      border-radius:999px;
-      padding:8px 14px;
-      font-size:13px;
-      cursor:pointer;
-      border:1px solid rgba(255,255,255,0.06);
-      background:var(--pill-bg);
-      color:var(--muted);
-      transition: all var(--transition);
-      user-select:none;
-    }
-    .pill[aria-pressed="true"]{
-      background:var(--accent);
-      color:#0b0b0d;
-      border-color:var(--accent);
-      transform:translateY(-2px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.45);
-    }
-    .pill:focus{outline:2px solid rgba(255,255,255,0.08); outline-offset:3px}
+  /* --------------------------
+     Left rail (TOC + controls)
+  ---------------------------*/
+  .rail{
+    background:linear-gradient(180deg, rgba(255,255,255,0.9), var(--panel));
+    padding:28px;
+    min-height:600px;
+    border-right:1px solid rgba(0,0,0,0.04);
+  }
+  .brand{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    margin-bottom:18px;
+  }
+  .logo{
+    width:52px;height:52px;border-radius:12px;
+    display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:white;font-weight:700;font-family:'Playfair Display';
+    box-shadow:0 6px 18px rgba(0,0,0,0.12);
+  }
+  .brand h4{margin:0;font-family:'Playfair Display';font-size:1rem}
+  .brand p{margin:0;font-size:0.85rem;color:var(--muted)}
 
-    /* ===== Grid ===== */
-    .grid {
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:18px;
-    }
-    @media (max-width:900px){
-      .grid{ grid-template-columns:repeat(2,1fr) }
-    }
-    @media (max-width:560px){
-      .grid{ grid-template-columns:repeat(1,1fr) }
-    }
+  .controls{display:flex;gap:8px;margin:18px 0 24px;flex-wrap:wrap}
+  .btn{
+    background:transparent;border:1px solid rgba(0,0,0,0.06);
+    padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600;font-size:0.9rem;
+    color:var(--ink);display:inline-flex;gap:8px;align-items:center;
+  }
+  .btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;border:0;box-shadow:0 8px 24px rgba(14,165,160,0.12)}
+  .small{font-size:0.8rem;padding:6px 10px}
 
-    /* ===== Card ===== */
-    .card{
-      position:relative;
-      border-radius:var(--radius);
-      overflow:hidden;
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      box-shadow: 0 8px 24px rgba(2,6,23,0.6);
-      transform-origin:center;
-      transition: transform 300ms cubic-bezier(.2,.9,.3,1), box-shadow 200ms;
-      min-height:0;
-      aspect-ratio:1 / 1; /* keeps perfect square */
-    }
-    .card:focus-within, .card:hover{
-      transform: translateY(-6px) scale(1.02);
-      box-shadow: 0 18px 40px rgba(2,6,23,0.7);
-    }
+  .toc{
+    margin-top:8px;
+  }
+  .toc a{
+    display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:9px;color:var(--ink);text-decoration:none;margin-bottom:6px;
+  }
+  .toc a.active{background:linear-gradient(90deg, rgba(14,165,160,0.08), rgba(209,154,102,0.04));border:1px solid rgba(14,165,160,0.06)}
+  .toc a:hover{background:rgba(14,165,160,0.04)}
 
-    /* Placeholder photo area */
-    .photo {
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:var(--muted);
-      font-weight:600;
-      font-size:14px;
-      background:
-        linear-gradient(120deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));
-    }
+  .progress{
+    height:8px;border-radius:999px;background:rgba(0,0,0,0.04);overflow:hidden;margin-top:18px;
+  }
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0%}
 
-    /* Overlay revealed on hover/focus */
-    .overlay{
-      position:absolute;
-      inset:0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.55));
-      display:flex;
-      align-items:flex-end;
-      justify-content:center;
-      padding:18px;
-      color:var(--accent);
-      gap:8px;
-      pointer-events:none;
-      transform: translateY(18px);
-      opacity:0;
-      transition: opacity 220ms var(--transition), transform 260ms var(--transition);
-    }
-    .card:focus-within .overlay,
-    .card:hover .overlay{
-      opacity:1;
-      transform: translateY(0);
-      pointer-events:auto;
-    }
-    .overlay-inner{
-      width:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      text-align:center;
-      gap:6px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.35));
-      padding:12px;
-      border-radius:12px;
-      backdrop-filter: blur(6px);
-    }
-    .type {
-      font-size:11px;
-      letter-spacing:0.12em;
-      color:var(--muted);
-      text-transform:uppercase;
-    }
-    .title{
-      font-size:16px;
-      font-weight:700;
-      margin:0;
-    }
-    .quote{
-      font-size:13px;
-      font-style:italic;
-      color:#d6d8da;
-      margin:0;
-    }
+  /* --------------------------
+     Main content area
+  ---------------------------*/
+  main{
+    padding:34px 48px;
+    background:transparent;
+    min-height:600px;
+  }
+  header.hero{
+    display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin-bottom:18px;
+  }
+  .hero-left{
+    flex:1 1 520px;
+  }
+  .hero-title{
+    font-family:'Playfair Display';
+    font-size:2.6rem;
+    margin:0 0 8px;
+    line-height:1.04;
+  }
+  .hero-sub{
+    margin:0;color:var(--muted);font-size:1.05rem;
+  }
+  .authors{
+    display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;
+  }
+  .author-chip{
+    display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;background:var(--glass);font-size:0.9rem;
+  }
+  .hero-right{
+    width:240px;height:160px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+    display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,0.06);
+    border:1px solid rgba(0,0,0,0.03);
+  }
 
-    /* Footer legend */
-    .legend{ margin-top:18px; color:var(--muted); text-align:center; font-size:13px }
+  /* sections & cards */
+  section.chapter{
+    margin:20px 0 40px;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
+    box-shadow:0 6px 20px rgba(10,20,30,0.03);border:1px solid rgba(0,0,0,0.03)
+  }
+  h2.chapter-title{font-family:'Playfair Display';font-size:1.6rem;margin:0 0 10px}
+  p.lead{color:var(--muted);margin:0 0 12px}
 
-    /* Accessible hidden (for screen readers) */
-    .sr-only{
-      position:absolute!important;
-      height:1px;width:1px;
-      overflow:hidden;clip:rect(1px,1px,1px,1px);
-      white-space:nowrap;border:0;padding:0;margin:-1px;
-    }
-  </style>
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:16px;
+  }
+
+  .card{
+    background:var(--panel);border-radius:12px;padding:14px;border:1px solid rgba(0,0,0,0.04);
+    box-shadow:0 8px 22px rgba(0,0,0,0.04);transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover{transform:translateY(-6px);box-shadow:0 18px 44px rgba(0,0,0,0.08)}
+  .card h4{margin:0 0 8px;font-size:1.05rem;color:var(--ink)}
+  .muted{color:var(--muted);font-size:0.95rem}
+
+  /* insight cards special */
+  .insight {
+    border-left:4px solid var(--accent);
+    padding-left:12px;
+  }
+
+  /* maturity model */
+  .maturity{display:flex;gap:12px;align-items:flex-end}
+  .level{
+    flex:1;padding:12px;border-radius:10px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.3));
+    cursor:pointer;border:1px solid rgba(0,0,0,0.05);
+  }
+  .level.active{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:white;border:0;box-shadow:0 10px 36px rgba(14,165,160,0.12)}
+
+  /* patterns */
+  .patterns{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+  .pattern{
+    border-radius:10px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+    cursor:pointer;border:1px solid rgba(0,0,0,0.03);
+  }
+
+  /* opportunity engine canvas */
+  .engine{
+    border-radius:12px;padding:16px;border:1px dashed rgba(0,0,0,0.06);min-height:160px;
+  }
+  .engine .inputs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .chip{padding:8px 10px;border-radius:999px;background:var(--glass);border:1px solid rgba(0,0,0,0.03);cursor:pointer}
+  .result{
+    padding:12px;border-radius:10px;background:linear-gradient(90deg, rgba(14,165,160,0.06), rgba(209,154,102,0.04));
+    font-weight:600;color:var(--ink)
+  }
+
+  /* template drawer */
+  .drawer{
+    position:fixed;right:22px;bottom:22px;width:380px;max-width:calc(100% - 48px);
+    background:var(--panel);border-radius:14px;padding:14px;border:1px solid rgba(0,0,0,0.06);
+    box-shadow:0 18px 60px rgba(0,0,0,0.12);
+  }
+  .drawer h5{margin:0 0 8px}
+  .template-list{display:flex;flex-direction:column;gap:8px}
+  .template-item{
+    display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:var(--glass);
+  }
+
+  /* footer nav */
+  .nav-footer{display:flex;justify-content:space-between;gap:12px;margin-top:18px}
+  .nav-footer .nav-btn{flex:1;padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:transparent;cursor:pointer}
+  .nav-footer .nav-btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;border:0}
+
+  /* responsive */
+  @media (max-width:1000px){
+    .wrap{grid-template-columns:1fr}
+    .rail{order:2}
+    main{order:1;padding:22px}
+    .drawer{right:12px;left:12px;width:auto}
+  }
+</style>
 </head>
 <body>
-  <div class="container" id="app" role="application" aria-label="Influence Grid Analyzer">
-    <header>
-      <h1>Influence Grid Analyzer</h1>
-      <p class="lead">Explore archetypes of visual influence. Hover a tile to decode its psychological cue. Use the filters to focus the analysis.</p>
-    </header>
 
-    <nav class="filters" role="toolbar" aria-label="Filter archetypes">
-      <button class="pill" data-filter="All" aria-pressed="true">All</button>
-      <button class="pill" data-filter="Power" aria-pressed="false">Power</button>
-      <button class="pill" data-filter="Connection" aria-pressed="false">Connection</button>
-      <button class="pill" data-filter="Aspirational" aria-pressed="false">Aspirational</button>
-      <button class="pill" data-filter="Relatable" aria-pressed="false">Relatable</button>
+<div class="wrap" role="main">
+
+  <!-- LEFT RAIL -->
+  <aside class="rail" aria-label="Sidebar">
+    <div class="brand">
+      <div class="logo">PD</div>
+      <div>
+        <h4>Problem Discovery Playbook</h4>
+        <p class="muted">Premium Field Guide • For resource-conscious teams</p>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="startSprint">Start 2-week Sprint</button>
+      <button class="btn small" id="toggleTheme">Toggle Mode</button>
+      <button class="btn small" id="openDrawer">Templates</button>
+    </div>
+
+    <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+
+    <nav class="toc" id="toc" aria-label="Table of contents">
+      <!-- TOC items injected by JS -->
     </nav>
 
-    <main>
-      <section class="grid" id="grid" aria-live="polite" aria-label="Influence grid">
-        <!-- Cards: data-type attribute used for filtering -->
-        <article class="card" data-type="Power" tabindex="0" aria-label="Authority — No Smoke Without Fire">
-          <div class="photo">[ Photo 1 ]</div>
-          <div class="overlay" aria-hidden="true">
-            <div class="overlay-inner">
-              <div class="type">Power</div>
-              <div class="title">Authority</div>
-              <div class="quote">“No Smoke Without Fire”</div>
-            </div>
-          </div>
-        </article>
+    <div style="margin-top:18px">
+      <small class="muted">Quick links</small>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn small" id="tocTop">Top</button>
+        <button class="btn small" id="shareInsights">Share</button>
+      </div>
+    </div>
+  </aside>
 
-        <article class="card" data-type="Connection" tabindex="0" aria-label="Tribe — Power in Familiar Faces">
-          <div class="photo">[ Photo 2 ]</div>
-          <div class="overlay" aria-hidden="true">
-            <div class="overlay-inner">
-              <div class="type">Connection</div>
-              <div class="title">Tribe</div>
-              <div class="quote">“Power in Familiar Faces”</div>
-            </div>
-          </div>
-        </article>
+  <!-- MAIN CONTENT -->
+  <main>
+    <header class="hero">
+      <div class="hero-left">
+        <h1 class="hero-title">Problem Discovery Playbook</h1>
+        <p class="hero-sub">From observation to opportunity — fast, field-first methods, templates, and real case studies for teams who can't waste time.</p>
 
-        <article class="card" data-type="Aspirational" tabindex="0" aria-label="Charisma — Confidence in Contrast">
-          <div class="photo">[ Photo 3 ]</div>
-          <div class="overlay" aria-hidden="true">
-            <div class="overlay-inner">
-              <div class="type">Aspirational</div>
-              <div class="title">Charisma</div>
-              <div class="quote">“Confidence in Contrast”</div>
-            </div>
-          </div>
-        </article>
+        <div class="authors" aria-hidden="true">
+          <div class="author-chip">👤 The Strategist</div>
+          <div class="author-chip">👤 The Researcher</div>
+          <div class="author-chip">👤 The Ethnographer</div>
+          <div class="author-chip">👤 The Builder</div>
+        </div>
+      </div>
 
-        <article class="card" data-type="Connection" tabindex="0" aria-label="Access — Backstage Belonging">
-          <div class="photo">[ Photo 4 ]</div>
-          <div class="overlay" aria-hidden="true">
-            <div class="overlay-inner">
-              <div class="type">Connection</div>
-              <div class="title">Access</div>
-              <div class="quote">“Backstage Belonging”</div>
-            </div>
-          </div>
-        </article>
+      <div class="hero-right">
+        <div style="text-align:center">
+          <div style="font-size:0.95rem;color:var(--muted)">Signature</div>
+          <div style="font-family:'Playfair Display';font-size:1.55rem;margin-top:6px">Opportunity Engine</div>
+        </div>
+      </div>
+    </header>
 
-        <article class="card" data-type="Relatable" tabindex="0" aria-label="Intimacy — The Smile Before the Story">
-          <div class="photo">[ Photo 5 ]</div>
-          <div class="overlay" aria-hidden="true">
-            <div class="overlay-inner">
-              <div class="type">Relatable</div>
-              <div class="title">Intimacy</div>
-              <div class="quote">“The Smile Before the Story”</div>
-            </div>
-          </div>
-        </article>
+    <!-- Chapters injected via JS -->
+    <div id="contentArea"></div>
 
-        <article class="card" data-type="Power" tabindex="0" aria-label="Control — Silence Speaks Loud">
-          <div class="photo">[ Photo 6 ]</div>
-          <div class="overlay" aria-hidden="true">
-            <div class="overlay-inner">
-              <div class="type">Power</div>
-              <div class="title">Control</div>
-              <div class="quote">“Silence Speaks Loud”</div>
-            </div>
-          </div>
-        </article>
+  </main>
+</div>
 
-        <article class="card" data-type="Aspirational" tabindex="0" aria-label="Status — Big Company, Bigger Frame">
-          <div class="photo">[ Photo 7 ]</div>
-          <div class="overlay" aria-hidden="true">
-            <div class="overlay-inner">
-              <div class="type">Aspirational</div>
-              <div class="title">Status</div>
-              <div class="quote">“Big Company, Bigger Frame”</div>
-            </div>
-          </div>
-        </article>
-
-        <article class="card" data-type="Relatable" tabindex="0" aria-label="Pride — Symbolic Celebration">
-          <div class="photo">[ Photo 8 ]</div>
-          <div class="overlay" aria-hidden="true">
-            <div class="overlay-inner">
-              <div class="type">Relatable</div>
-              <div class="title">Pride</div>
-              <div class="quote">“Symbolic Celebration”</div>
-            </div>
-          </div>
-        </article>
-
-        <article class="card" data-type="Connection" tabindex="0" aria-label="Narrative — The Breakfast of Influence">
-          <div class="photo">[ Photo 9 ]</div>
-          <div class="overlay" aria-hidden="true">
-            <div class="overlay-inner">
-              <div class="type">Connection</div>
-              <div class="title">Narrative</div>
-              <div class="quote">“The Breakfast of Influence”</div>
-            </div>
-          </div>
-        </article>
-
-      </section>
-    </main>
-
-    <div class="legend">Each frame is an archetype used by influential profiles. Open the filters to isolate themes.</div>
+<!-- Template Drawer (floating) -->
+<div class="drawer" id="drawer" aria-hidden="true" style="display:none">
+  <h5>Toolkit • Templates</h5>
+  <div class="template-list" id="templateList">
+    <!-- populated by JS -->
   </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn" id="closeDrawer">Close</button>
+    <a class="btn btn-primary" id="downloadAll">Download All (.zip)</a>
+  </div>
+</div>
 
-  <script>
-    /* ===== Simple filter handling ===== */
-    (function(){
-      const filterButtons = document.querySelectorAll('.pill');
-      const cards = Array.from(document.querySelectorAll('.card'));
-      let active = 'All';
+<!-- Modal area -->
+<div id="modalRoot"></div>
 
-      function applyFilter(chosen){
-        active = chosen;
-        // update aria-pressed
-        filterButtons.forEach(btn => {
-          const val = btn.dataset.filter;
-          btn.setAttribute('aria-pressed', val === chosen ? 'true' : 'false');
-        });
+<script>
+/* ------------------------------------------------------------------
+   DATA: chapters, insights, patterns, templates - edit to customize
+   ------------------------------------------------------------------*/
+const CHAPTERS = [
+  {id:'ch1', title:'Opportunity Mindset', lead:'Strategist', body:`<p class="lead">What counts as an opportunity? Learn Pain × Frequency × Solvability and how to spot signal in noise.</p>
+    <div class="card insight"><h4>Opportunity = Pain × Frequency × Solvability</h4><p class="muted">If one is missing, deprioritize.</p></div>
+    <div class="card"><h4>Mini-exercise</h4><p class="muted">Turn 5 anecdotes into opportunity hypotheses (we show you how).</p></div>`},
 
-        // show/hide matching cards
-        cards.forEach(card => {
-          const type = card.dataset.type;
-          if(chosen === 'All' || type === chosen){
-            card.style.display = ''; // default
-          } else {
-            // graceful hide with fade + collapse for accessibility
-            card.style.display = 'none';
-          }
-        });
+  {id:'ch2', title:'Research Triad: Talk, Watch, Measure', lead:'Data Analyst', body:`<p class="lead">Talk for motivation, Watch for behavior, Measure for scale. Use them together.</p>
+    <div class="card"><h4>5-Day Triad Sprint</h4><p class="muted">Day1 interviews - Day2 observation - Day3 synth - Day4 metrics - Day5 prioritize.</p></div>`},
 
-        // For screen readers: announce
-        const grid = document.getElementById('grid');
-        grid.setAttribute('aria-label', `Influence grid — filter: ${chosen}`);
-      }
+  {id:'ch3', title:'Recruiting the Right People', lead:'Researcher', body:`<p class="lead">Recruit high-need users, high-workaround users, and high-touch experts. Use referral chains and support logs.</p>
+    <div class="card"><h4>Recruiting Screener (sample)</h4><p class="muted">How often? What tools? Who else involved?</p></div>`},
 
-      // attach click handlers
-      filterButtons.forEach(btn => {
-        btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
-        btn.addEventListener('keydown', (ev) => {
-          if(ev.key === 'Enter' || ev.key === ' '){
-            ev.preventDefault();
-            btn.click();
-          }
-        });
-      });
+  {id:'ch4', title:'Interview Design', lead:'Researcher', body:`<p class="lead">Ask about the past, focus on events and workflows, follow up, and avoid hypotheticals.</p>
+    <div class="card"><h4>20-min Script</h4><p class="muted">Warm-up → Context → Walkthrough → Friction → Workarounds → Close</p></div>`},
 
-      // keyboard: allow left/right to jump pills
-      document.addEventListener('keydown', (e) => {
-        const keys = ['ArrowLeft','ArrowRight'];
-        if(!keys.includes(e.key)) return;
-        const focused = document.activeElement;
-        if(!focused || !focused.classList.contains('pill')) return;
-        const arr = Array.from(filterButtons);
-        const i = arr.indexOf(focused);
-        if(i === -1) return;
-        const next = e.key === 'ArrowRight' ? arr[i+1] ?? arr[0] : arr[i-1] ?? arr[arr.length-1];
-        next.focus();
-      });
+  {id:'ch5', title:'Observation & Shadowing', lead:'Ethnographer', body:`<p class="lead">Watch behavior to surface workarounds, pauses, and context-driven friction.</p>
+    <div class="card"><h4>FACT Notes</h4><p class="muted">Facts • Actions • Context • Thoughts (label hypotheses).</p></div>`},
 
-      // initialize
-      applyFilter('All');
-    })();
-  </script>
+  {id:'ch6', title:'Quick Surveys', lead:'Quant UX', body:`<p class="lead">Use surveys only to quantify patterns you already observed. Core Six questions included in the toolkit.</p>
+    <div class="card"><h4>Core Six</h4><p class="muted">Frequency • Severity • Workaround • Time Cost • Success Rate • Context</p></div>`},
+
+  {id:'ch7', title:'Synth & Affinity Mapping', lead:'Cognitive Architect', body:`<p class="lead">Atomic notes → clusters → themes → opportunities. Run a 60-minute synth sprint.</p>
+    <div class="card"><h4>Affinity Rules</h4><p class="muted">Group by similarity, not pre-categories.</p></div>`},
+
+  {id:'ch8', title:'Prioritization Frameworks', lead:'Strategist', body:`<p class="lead">Impact × Frequency × Solvability scoring. Use pragmatic decision windows: Now / Next / Never.</p>
+    <div class="card"><h4>Opportunity Score</h4><p class="muted">Score 1-5 across four forces & sum.</p></div>`},
+
+  {id:'ch9', title:'Validation', lead:'Strategist', body:`<p class="lead">Protect the team from false positives. Validation funnel: Desk → Micro-tests → Behavior.</p>
+    <div class="card"><h4>Validation Scorecard</h4><p class="muted">Frequency • Intensity • Workarounds • Momentum</p></div>`},
+
+  {id:'ch10', title:'From Problem to Brief', lead:'Strategist', body:`<p class="lead">One-page opportunity brief template that aligns the team and clarifies next steps.</p>
+    <div class="card"><h4>Brief Template</h4><p class="muted">Title • Insight • Evidence • Segments • Impact • Next Step</p></div>`},
+
+  {id:'ch11', title:'Case Examples', lead:'Ethnographer', body:`<p class="lead">Three real discovery-to-prototype cycles with honest failures and wins.</p>
+    <div class="card"><h4>Case Study: Booking Flow</h4><p class="muted">Prototype + 11% lift in cart completion after a tooltip test.</p></div>`},
+
+  {id:'ch12', title:'Toolkit', lead:'All', body:`<p class="lead">Reusable templates: Interview scripts, consent forms, synthesis worksheets, affinity mapping, prototyping checklists.</p>
+    <div class="card"><h4>Templates Ready</h4><p class="muted">Download or copy into your Sprint.</p></div>`},
+];
+
+const INSIGHTS = [
+  {id:'i1', title:'Workarounds = Roadmaps', desc:'If users create parallel systems, they are mapping unmet needs.'},
+  {id:'i2', title:'Emotion Flags Prioritize', desc:'Emotional intensity often beats frequency for urgency.'},
+  {id:'i3', title:'Small Data Can Be Decisive', desc:'Five strong observations beat 50 weak survey counts.'}
+];
+
+const PATTERNS = [
+  {id:'p1', title:'Sticky Notes & Spreadsheets', body:'Users maintain external docs to fill gaps in tooling.'},
+  {id:'p2', title:'Silent Abandonment', body:'Users click but never commit due to cognitive overload.'},
+  {id:'p3', title:'Exception Flooding', body:'Systems assume happy paths; exceptions cause delays.'},
+  {id:'p4', title:'Hidden Work', body:'Effort that teams do but don’t count.'}
+];
+
+const TEMPLATES = [
+  {id:'t1', name:'20-min Interview Script', text:`Warm-up (1m)\nContext (2m)\nWalkthrough (10m)\nFriction (5m)\nWorkarounds (2m)\nClose (1m)`},
+  {id:'t2', name:'Observation FACT Notes', text:`F: (facts)\nA: (actions)\nC: (context)\nT: (thoughts / hypotheses)`},
+  {id:'t3', name:'Opportunity Brief (one-pager)', text:`OPPORTUNITY TITLE:\nSUMMARY INSIGHT:\nEVIDENCE:\nSEGMENTS:\nIMPACT:\nWORKAROUNDS:\nNEXT STEP:`}
+];
+
+/* ------------------------------------------------------------------
+   Utility helpers & DOM binders
+   ------------------------------------------------------------------*/
+const contentArea = document.getElementById('contentArea');
+const toc = document.getElementById('toc');
+const progressBar = document.getElementById('progressBar');
+const drawer = document.getElementById('drawer');
+const templateList = document.getElementById('templateList');
+const modalRoot = document.getElementById('modalRoot');
+
+function createChapterNode(ch){
+  const sec = document.createElement('section');
+  sec.className = 'chapter';
+  sec.id = ch.id;
+  sec.innerHTML = `
+    <h2 class="chapter-title">${ch.title}</h2>
+    <p class="muted">Lead: ${ch.lead}</p>
+    ${ch.body}
+    <div class="nav-footer" style="margin-top:16px">
+      <button class="nav-btn" data-prev="${ch.id}">◀ Prev</button>
+      <button class="nav-btn primary" data-next="${ch.id}">Next ▶</button>
+    </div>
+  `;
+  return sec;
+}
+
+/* Populate chapters and TOC */
+function render(){
+  CHAPTERS.forEach((ch,i) => {
+    contentArea.appendChild(createChapterNode(ch));
+    const a = document.createElement('a');
+    a.href = '#'+ch.id;
+    a.innerHTML = `<span>${i+1}. ${ch.title}</span><small class="muted">${ch.lead}</small>`;
+    a.addEventListener('click', (e)=> {
+      // smooth scroll handled by browser; update active class
+      setTimeout(updateActiveTOC, 100);
+    });
+    toc.appendChild(a);
+  });
+}
+
+/* set active TOC entry based on viewport */
+function updateActiveTOC(){
+  const items = Array.from(document.querySelectorAll('.toc a'));
+  let activeIndex = 0;
+  CHAPTERS.forEach((ch, i) => {
+    const el = document.getElementById(ch.id);
+    const rect = el.getBoundingClientRect();
+    if(rect.top <= 120) activeIndex = i;
+  });
+  items.forEach((it, idx)=> it.classList.toggle('active', idx === activeIndex));
+}
+
+/* reading progress */
+function updateProgress(){
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const scrolled = (window.scrollY / docHeight)*100;
+  progressBar.style.width = Math.max(4,Math.min(100,scrolled)) + '%';
+}
+
+/* nav footer click handling (prev/next) */
+document.addEventListener('click', (e)=>{
+  const prev = e.target.closest('[data-prev]');
+  const next = e.target.closest('[data-next]');
+  if(prev){
+    const id = prev.dataset.prev;
+    const idx = CHAPTERS.findIndex(c => c.id===id);
+    if(idx>0) document.getElementById(CHAPTERS[idx-1].id).scrollIntoView({behavior:'smooth'});
+  }
+  if(next){
+    const id = next.dataset.next;
+    const idx = CHAPTERS.findIndex(c => c.id===id);
+    if(idx < CHAPTERS.length-1) document.getElementById(CHAPTERS[idx+1].id).scrollIntoView({behavior:'smooth'});
+  }
+});
+
+/* templates drawer */
+function populateTemplates(){
+  templateList.innerHTML = '';
+  TEMPLATES.forEach(t=>{
+    const div = document.createElement('div');
+    div.className = 'template-item';
+    div.innerHTML = `<div><strong>${t.name}</strong><div class="muted" style="font-size:0.85rem">${t.text.split('\\n').slice(0,2).join(' • ')}</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn small" data-copy="${t.id}">Copy</button>
+        <button class="btn small" data-dl="${t.id}">Download</button>
+      </div>`;
+    templateList.appendChild(div);
+  });
+}
+
+/* copy / download template */
+document.addEventListener('click', (e)=>{
+  const copy = e.target.closest('[data-copy]');
+  const dl = e.target.closest('[data-dl]');
+  if(copy){
+    const id = copy.dataset.copy;
+    const t = TEMPLATES.find(x=>x.id===id);
+    navigator.clipboard.writeText(t.text).then(()=> alert('Template copied to clipboard!'));
+  }
+  if(dl){
+    const id = dl.dataset.dl;
+    const t = TEMPLATES.find(x=>x.id===id);
+    const blob = new Blob([t.text], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = t.name.replace(/\s+/g,'_') + '.txt';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+});
+
+/* patterns modal */
+function showPattern(id){
+  const p = PATTERNS.find(x=>x.id===id);
+  const modal = document.createElement('div');
+  modal.style.position='fixed';modal.style.left=0;modal.style.top=0;width='100%';height='100%';
+  modal.style.display='grid';modal.style.placeItems='center';modal.style.zIndex=9999;
+  modal.innerHTML = `
+    <div style="width:min(720px,94%);background:var(--panel);padding:22px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+      <h3 style="margin:0 0 8px">${p.title}</h3>
+      <p class="muted">${p.body}</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
+        <button class="btn small" id="closePattern">Close</button>
+        <button class="btn btn-primary" id="savePattern">Save Insight</button>
+      </div>
+    </div>
+  `;
+  modalRoot.appendChild(modal);
+  document.getElementById('closePattern').onclick = ()=> modal.remove();
+  document.getElementById('savePattern').onclick = ()=> { saveInsight(p.title, p.body); modal.remove(); };
+}
+
+/* save insight */
+function saveInsight(title, desc){
+  const id = 'ins_' + Date.now();
+  INSIGHTS.push({id,title,desc});
+  alert('Insight saved to local gallery');
+  renderInsights();
+}
+
+/* render insights gallery */
+function renderInsights(){
+  // find or create container in page
+  let container = document.getElementById('insightsContainer');
+  if(!container){
+    const node = document.createElement('div');
+    node.className = 'chapter';
+    node.id = 'insights';
+    node.innerHTML = `<h2 class="chapter-title">Insight Cards</h2><p class="muted">Tap any card to highlight or copy the insight.</p><div id="insightGrid" class="grid"></div>`;
+    contentArea.prepend(node);
+    container = node;
+  }
+  const grid = document.getElementById('insightGrid');
+  grid.innerHTML = '';
+  INSIGHTS.forEach(i=>{
+    const c = document.createElement('div');
+    c.className = 'card insight';
+    c.innerHTML = `<h4>${i.title}</h4><p class="muted">${i.desc}</p><div style="display:flex;gap:8px;margin-top:10px"><button class="btn small" data-copyins="${i.id}">Copy</button><button class="btn small" data-pin="${i.id}">Pin</button></div>`;
+    grid.appendChild(c);
+  });
+}
+
+/* pin/copy handlers */
+document.addEventListener('click', (e)=>{
+  const copy = e.target.closest('[data-copyins]');
+  const pin = e.target.closest('[data-pin]');
+  if(copy){
+    const id = copy.dataset.copyins;
+    const it = INSIGHTS.find(x=>x.id===id);
+    navigator.clipboard.writeText(`${it.title}\n\n${it.desc}`).then(()=> alert('Insight copied'));
+  }
+  if(pin){
+    const id = pin.dataset.pin;
+    alert('Pinned (demo): ' + id);
+  }
+});
+
+/* render patterns area in chapter 11 if present */
+function renderPatterns(){
+  const node = document.createElement('div');
+  node.className = 'chapter';
+  node.innerHTML = `<h2 class="chapter-title">Hall of Patterns</h2><p class="muted">Recurring field patterns we see across projects — click to open.</p><div class="patterns" id="patternGrid"></div>`;
+  contentArea.appendChild(node);
+  const grid = document.getElementById('patternGrid');
+  PATTERNS.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'pattern';
+    el.innerHTML = `<strong>${p.title}</strong><p class="muted" style="margin-top:8px">${p.body.slice(0,70)}…</p>`;
+    el.onclick = ()=> showPattern(p.id);
+    grid.appendChild(el);
+  });
+}
+
+/* Opportunity Engine minimal logic */
+function renderEngine(){
+  const node = document.createElement('div');
+  node.className = 'chapter';
+  node.innerHTML = `<h2 class="chapter-title">Opportunity Engine</h2>
+    <p class="muted">Drag inputs (signals) into the engine and watch prioritized opportunities emerge.</p>
+    <div class="engine" id="engine">
+      <div class="inputs" id="engineInputs"></div>
+      <div class="result" id="engineResult">No inputs selected</div>
+    </div>
+    <div style="margin-top:12px" id="signalPool"></div>`;
+  contentArea.appendChild(node);
+  const pool = document.getElementById('signalPool');
+  ['Workarounds','High Frequency','Emotional Intensity','Visible Cost','Hard to Automate','Momentum to Change'].forEach(sig=>{
+    const s = document.createElement('span');
+    s.className = 'chip';
+    s.textContent = sig;
+    s.onclick = ()=> toggleSignal(sig);
+    pool.appendChild(s);
+  });
+}
+let engineInputs = [];
+function toggleSignal(sig){
+  const idx = engineInputs.indexOf(sig);
+  if(idx>-1) engineInputs.splice(idx,1); else engineInputs.push(sig);
+  const inputsNode = document.getElementById('engineInputs');
+  inputsNode.innerHTML = '';
+  engineInputs.forEach(i=>{
+    const chip = document.createElement('div'); chip.className='chip'; chip.textContent = i;
+    inputsNode.appendChild(chip);
+  });
+  const res = document.getElementById('engineResult');
+  if(engineInputs.length===0) res.textContent='No inputs selected';
+  else {
+    // simple ranking rules (demo)
+    let score = engineInputs.length * 2;
+    if(engineInputs.includes('Workarounds')) score+=3;
+    if(engineInputs.includes('Momentum to Change')) score+=2;
+    res.textContent = `Opportunity strength: ${score}/12 — ${score>7 ? 'High' : score>4 ? 'Medium' : 'Low'}`;
+  }
+}
+
+/* startup actions */
+render();
+renderInsights();
+renderPatterns();
+renderEngine();
+populateTemplates();
+
+/* window events */
+window.addEventListener('scroll', ()=>{ updateProgress(); updateActiveTOC(); });
+window.addEventListener('resize', updateActiveTOC);
+
+/* controls */
+document.getElementById('toggleTheme').addEventListener('click', ()=>{
+  // quick CSS-toggle approach (dark mode invert)
+  if(document.documentElement.style.filter === 'invert(0)') { document.documentElement.style.filter='invert(0)'; }
+  // prefer color scheme handled by OS; provide manual small animation
+  document.documentElement.classList.toggle('force-dark');
+  alert('Toggle available via device theme. (Demo toggle placeholder)');
+});
+document.getElementById('openDrawer').addEventListener('click', ()=>{ drawer.style.display='block'; drawer.setAttribute('aria-hidden','false'); });
+document.getElementById('closeDrawer').addEventListener('click', ()=>{ drawer.style.display='none'; drawer.setAttribute('aria-hidden','true'); });
+document.getElementById('tocTop').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+document.getElementById('startSprint').addEventListener('click', ()=> alert('Two-week sprint starter created (demo).'));
+document.getElementById('shareInsights').addEventListener('click', ()=> alert('Share function (demo).'));
+
+/* download all - demo: compiles text files into a zip (browser-side zipping requires libraries).
+   We'll provide a simple multi-download instead as a demo. */
+document.getElementById('downloadAll').addEventListener('click', ()=>{
+  TEMPLATES.forEach(t=>{
+    const blob = new Blob([t.text], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download = t.name.replace(/\s+/g,'_')+'.txt';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+  alert('Templates downloaded (one-by-one).');
+});
+
+/* initial active TOC and progress */
+updateActiveTOC(); updateProgress();
+
+/* accessibility: keyboard shortcuts (g = go top, t = templates) */
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='g') window.scrollTo({top:0,behavior:'smooth'});
+  if(e.key==='t') drawer.style.display = drawer.style.display==='block' ? 'none' : 'block';
+});
+</script>
 </body>
-</html>
+      </html>
