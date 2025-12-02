@@ -309,10 +309,175 @@
    DATA: chapters, insights, patterns, templates - edit to customize
    ------------------------------------------------------------------*/
 const CHAPTERS = [
-  {id:'ch1', title:'Opportunity Mindset', lead:'Strategist', body:`<p class="lead">What counts as an opportunity? Learn Pain × Frequency × Solvability and how to spot signal in noise.</p>
-    <div class="card insight"><h4>Opportunity = Pain × Frequency × Solvability</h4><p class="muted">If one is missing, deprioritize.</p></div>
-    <div class="card"><h4>Mini-exercise</h4><p class="muted">Turn 5 anecdotes into opportunity hypotheses (we show you how).</p></div>`},
+{
+  id: 'ch1',
+  title: 'Opportunity Mindset',
+  lead: 'Strategist',
+  body: `
+  <p class="lead">
+    What counts as an opportunity? Learn Pain × Frequency × Solvability and how to spot signal in noise.
+  </p>
 
+  <section>
+    <h3>1. What an Opportunity Really Is</h3>
+    <p>Most teams think they’re opportunity-driven. They’re not. They’re idea-driven—just with nicer vocabulary.</p>
+    <p>
+      Real opportunity work begins long before solutions, features, or roadmaps. It starts with a mindset shift:
+      <strong>from “What should we build?” to “What deserves to be solved?”</strong>
+    </p>
+    <p>Resource-conscious teams don’t have the luxury of guessing. They need clarity early. And clarity begins with understanding what truly counts as an opportunity.</p>
+
+    <div class="card insight">
+      <h4>Opportunity = Pain × Frequency × Solvability</h4>
+      <p class="muted">Miss one, and it’s not an opportunity—it's a distraction.</p>
+    </div>
+
+    <ul class="key-points">
+      <li><strong>Pain</strong> — a real struggle, friction, or unmet desire.</li>
+      <li><strong>Frequency</strong> — it happens often enough to matter.</li>
+      <li><strong>Solvability</strong> — you can realistically address it with today’s resources.</li>
+    </ul>
+  </section>
+
+  <hr/>
+
+  <section>
+    <h3>2. The Problem with “Anecdote Thinking”</h3>
+    <p>
+      Hearing three customers mention something doesn’t make it a pattern. But observing fifteen people using the same workaround in
+      different contexts? That’s signal.
+    </p>
+
+    <table class="comparison">
+      <thead>
+        <tr><th>Noise</th><th>Signal</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>One-off complaints</td><td>Repeated observations</td></tr>
+        <tr><td>Hypothetical needs</td><td>Actual behaviors</td></tr>
+      <tr><td>Loud customers</td><td>Consistent workarounds</td></tr>
+        <tr><td>Broad statements</td><td>Specific incidents</td></tr>
+      </tbody>
+    </table>
+
+    <p class="muted"><em>Signal is anything that repeats without your prompting.</em></p>
+  </section>
+
+  <hr/>
+
+  <section>
+    <h3>3. The 3 Opportunity Signals You Can Trust</h3>
+
+    <h4>a) Emotional intensity</h4>
+    <p>People rarely get emotional about small annoyances. When you hear frustration, urgency, embarrassment, or relief—pay attention.</p>
+    <blockquote>
+      “I keep messing this up.” <br/>
+      “I hate how long this takes.” <br/>
+      “Honestly, this part makes me anxious.”
+    </blockquote>
+
+    <h4>b) Workarounds</h4>
+    <p>
+      Sticky notes, spreadsheets, screenshots, WhatsApp groups—these are compensation mechanisms.  
+      Where there are workarounds, there are opportunities.
+    </p>
+
+    <h4>c) Repetition across contexts</h4>
+    <p>
+      If friction repeats across segments or environments—urban/rural, paid/free, department-to-department—that’s a validated direction.
+    </p>
+  </section>
+
+  <hr/>
+
+  <section>
+    <h3>4. The Cognitive Biases That Lie to You</h3>
+    <ul class="key-points">
+      <li><strong>Confirmation bias</strong> — hearing only what proves your idea.</li>
+      <li><strong>Availability bias</strong> — overweighting the last user you talked to.</li>
+      <li><strong>Halo effect</strong> — letting the first statement shape the whole picture.</li>
+      <li><strong>Founder bias</strong> — assuming the problem is real because it’s real to you.</li>
+    </ul>
+    <p>You can’t eliminate bias—but you can manage it with disciplined observation and opportunity phrasing.</p>
+  </section>
+
+  <hr/>
+
+  <section>
+    <h3>5. Opportunity Phrasing: Turning Raw Notes into Insight</h3>
+    <p>
+      Instead of vague statements like: <em>“People are confused about onboarding.”</em>  
+      Use structured phrasing:
+    </p>
+
+    <blockquote>
+      “We consistently observed users hesitating at the ID upload step (10/14 users), with 7 restarting the flow.  
+      Their biggest tension: uncertainty about acceptable ID formats.”
+    </blockquote>
+
+    <ul class="key-points">
+      <li>Frequency</li>
+      <li>Specificity</li>
+      <li>Behavior</li>
+      <li>Emotional Insight</li>
+    </ul>
+  </section>
+
+  <hr/>
+
+  <section>
+    <h3>6. Field Example: Grocery Delivery Checkout Chaos</h3>
+
+    <div class="card">
+      <h4>Noise version</h4>
+      <p class="muted">“People complain about checkout.”</p>
+    </div>
+
+    <div class="card insight">
+      <h4>Signal version</h4>
+      <p>
+        Across five sessions, customers paused 5–12 seconds at delivery window selection.  
+        Three abandoned carts. Two asked family group chats for clarification.  
+        Four refreshed the page hoping for better options.
+      </p>
+      <p><strong>Emerging insight:</strong> Delivery fee changes feel unpredictable and UI gives no feedback loops.</p>
+      <p>A tiny tooltip prototype later increased cart completion by <strong>11%</strong> with almost no cost.</p>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section>
+    <h3>7. How to Know If Something Is Worth Exploring</h3>
+    <ul class="checklist">
+      <li>Does the problem repeat?</li>
+      <li>Do users compensate for it (workarounds)?</li>
+      <li>Does it appear across contexts or segments?</li>
+      <li>Does it create tension, frustration, wasted time, or risk?</li>
+      <li>Can you realistically solve it now?</li>
+    </ul>
+    <p>If you answer “yes” to at least three—there’s likely a real opportunity.</p>
+  </section>
+
+  <div class="card">
+    <h4>Mini-exercise</h4>
+    <p class="muted">Turn 5 anecdotes into opportunity hypotheses using: “Users struggle with ___ during ___ because ___.”</p>
+  </div>
+
+  <hr/>
+
+  <section>
+    <h3>8. The Opportunity Mindset in One Sentence</h3>
+    <p><strong>Don’t chase ideas. Chase repeated behaviors, emotional signals, and workarounds—and the opportunities will reveal themselves.</strong></p>
+  </section>
+
+  <div class="card principle">
+    <h4>Playbook Principle</h4>
+    <p><strong>Opportunity = Pain × Frequency × Solvability.</strong>  
+      If it doesn’t score on all three, it’s not your highest-value move.</p>
+  </div>
+  `
+  }
   {id:'ch2', title:'Research Triad: Talk, Watch, Measure', lead:'Data Analyst', body:`<p class="lead">Talk for motivation, Watch for behavior, Measure for scale. Use them together.</p>
     <div class="card"><h4>5-Day Triad Sprint</h4><p class="muted">Day1 interviews - Day2 observation - Day3 synth - Day4 metrics - Day5 prioritize.</p></div>`},
 
